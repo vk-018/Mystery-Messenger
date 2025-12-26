@@ -2,20 +2,9 @@ import mongoose from 'mongoose';
 import {z} from 'zod';      //it does not have any default updates
 //use interface to force ts to force safety scheks over mongoose schema, now we will get error during compilation only not runtime
 import Message from './message.model';
-
+import {UserZodSchema} from '../schemas/user.schema';
 //1. declare z schema
-//spl for msg: 
-const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/);
-const UserZodSchema=z.object({
-    userName:z.string(),
-    email: z.string().email(),
-    password: z.string(),
-    verifyCode: z.string(),
-    verifyCodeExpiry: z.date(),
-    isVerified: z.boolean().default(false),
-    isAcceptingMessages: z.boolean().default(true).optional(),
-    messages: z.array(objectId).optional(),
-});
+
 
 
 //Infer TypeScript type from Zod  - no  need to define interface obj....
@@ -25,6 +14,13 @@ type schema1 = z.infer<typeof UserZodSchema>;
 
 
 //Create Mongoose schema from Zod (manual but safe)
+/*This:
+
+✔ gives TypeScript typing
+✔ helps during development
+❌ does NOT validate runtime input
+❌ does NOT run when new User() is called
+ */
 const UserSchema= new mongoose.Schema<schema1>({      //satisfies wont work for mongoose schema
 
     userName: {
@@ -35,6 +31,7 @@ const UserSchema= new mongoose.Schema<schema1>({      //satisfies wont work for 
     },
     email:{
         type:String,
+        unique:true,
         required:true,
     },
 

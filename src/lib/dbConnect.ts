@@ -17,7 +17,7 @@ const connection: ObjConnection={};
 
 
 
-async function connectDb(): Promise <void>{
+export default async function dbConnect(): Promise <void>{
     if(connection.isConnected){
         console.log("DataBase already Connected");
         return;

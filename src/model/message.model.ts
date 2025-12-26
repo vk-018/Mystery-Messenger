@@ -2,12 +2,12 @@ import mongoose,{Document} from 'mongoose';
 import {z} from 'zod';
 
 
-const messageZodSchema= z.object({
+export const messageZodSchema= z.object({
     content: z.string(),
     createdAt: z.date().optional(),
 });
 
-type msgSchema= z.infer <typeof messageZodSchema>;
+export type msgSchema= z.infer <typeof messageZodSchema>;
 
 const messageSchema= new mongoose.Schema<msgSchema>({
     content: {
