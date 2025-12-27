@@ -21,7 +21,9 @@ const messageSchema= new mongoose.Schema<msgSchema>({
     }
 });
 
-
-const Message= mongoose.model<msgSchema> ("Message",messageSchema);   
+//this is imp for next js at every time it compile is tries to overwrite this model , so we want to create it first time then reusee id exists
+const Message =
+  mongoose.models.Message ||
+  mongoose.model<msgSchema>("Message", messageSchema);
 
 export default Message;

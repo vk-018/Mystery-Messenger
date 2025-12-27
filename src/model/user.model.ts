@@ -77,5 +77,5 @@ UserSchema.post("findOneAndDelete",async(data)=>{    //data is the object which 
 
 //create model
 
-const User=mongoose.model<schema1>("User",UserSchema);
+const User= mongoose.models.User || mongoose.model<schema1>("User",UserSchema);
 export default User;
