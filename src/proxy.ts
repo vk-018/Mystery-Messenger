@@ -3,7 +3,7 @@ import { NextResponse, NextRequest } from 'next/server'
 //The NextResponse API allows you to: redirect the incoming request to a different URL, rewrite the response by displaying a given URL
  //The most simple usage is when you want to require authentication for your entire site. You can add a middleware.js file with the following:
 export { default } from "next-auth/middleware"  //set matches accordingly if u want authentication on that file only
-//If a user is not logged in, the default behavior is to redirect them to the sign-in page.
+//If a user is not logged in[i.e no jwt token cookie or bad token], the default behavior is to redirect them to the sign-in page.
 import { getToken } from "next-auth/jwt"      //used to get the jwt
 
 

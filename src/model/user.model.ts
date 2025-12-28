@@ -27,7 +27,7 @@ const UserSchema= new mongoose.Schema<schema1>({      //satisfies wont work for 
         type:String,
         required: true,
         trim:true,
-        unique:true,
+        //unique:true,    google login may have same username
     },
     email:{
         type:String,

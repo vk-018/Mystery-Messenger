@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import dbConnect from "@/src/lib/dbConnect";
 import User from "@/src/model/user.model";
 import GoogleProvider from "next-auth/providers/google";
-
+import { UserZodSchema } from "@/src/schemas/user.schema";
 // ...
 // providers: [
 //   GoogleProvider({
@@ -57,6 +57,12 @@ export const authOptions: NextAuthOptions ={
             }
             }
         })
+        , 
+        GoogleProvider({
+          clientId: process.env.GOOGLE_CLIENT_ID as string,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET as string
+        })
+
     ],
 
     //NextAuth.js automatically creates simple, unbranded authentication pages for handling Sign in, Sign out, Email Verification and displaying error messages.
@@ -71,7 +77,51 @@ export const authOptions: NextAuthOptions ={
     secret: process.env.NEXTAUTH_SECRET,   //:🔐 Sign JWTs
 
     callbacks:{
-         async signIn({user }) {    //note in provider we returned user even when not verified
+         async signIn({user,account }) {    //note in provider we returned user even when not verified
+             // GOOGLE OAUTH
+            
+
+             if (account?.provider === "google") {
+               console.log("Google login for:", user.email);
+              //if this is first time add in db, other wise just return true
+               await dbConnect();
+               try{
+                //check weather this email already exist
+                let emailUser= await User.findOne({email :user.email});       //find return an array
+                console.log(emailUser);
+                if(emailUser && emailUser.isVerified){
+                  return true;
+                }
+                if (emailUser && !emailUser.isVerified) {
+                  //verify him as google login confirm ownership
+                    emailUser.isVerified=true;
+                    await emailUser.save();
+                    return true;
+                }
+                
+                const expiryDate=new Date();              //const objects are mutuable 
+                expiryDate.setHours(expiryDate.getHours()+1);
+
+                
+                const tempUser= new User({
+                    userName:user.name,
+                    email:user.email,
+                    password:"Google",
+                    verifyCode:"######",
+                    verifyCodeExpiry: expiryDate,
+                    isVerified: true,
+                    isAcceptingMessages: true,
+                    messages: [],
+                });
+                tempUser.save();
+                }
+                catch(err){
+                    console.log("Failed to Login",err);
+                }
+             // Google users are trusted
+               return true;
+             }
+
             if(user && !user.isVerified){
                 return false;       //block sign in
             }
@@ -79,13 +129,20 @@ export const authOptions: NextAuthOptions ={
               return true;
             }
          },
-         async jwt({ token, user }) {  //Runs when JWT is created or updated              
-           if (user) {      //put most of the user info in this -> this will increase payload but it will reduce db quries
-            token._id = user._id?.toString();
-            token.isVerified = user.isVerified;
-            token.isAcceptingMessage = user.isAcceptingMessage;
-            token.userName = user.userName;
+         async jwt({ token, user }) {  //Runs when JWT is created or updated  
+          //the passes user may be google user wont match our format , always access user directly from the db
+          if(user){      //to avoid db route hit even when user is not logged in
+          if (user?.email) {
+            token.email = user.email;
           }
+          const dbUser= await User.findOne({email:token.email});       //done use user email as it goes undefined on refresh         
+           if (dbUser) {      //put most of the dbUser info in this -> this will increase payload but it will reduce db quries
+            token._id = dbUser._id?.toString();
+            token.isVerified = dbUser.isVerified;
+            token.isAcceptingMessages = dbUser.isAcceptingMessages;
+            token.userName = dbUser.userName;
+          }
+        }
           return token;
          },
 
@@ -94,7 +151,7 @@ export const authOptions: NextAuthOptions ={
               //when ssession strategy is set to jwt only token is available with session
             session.user._id = token._id as string;
             session.user.isVerified = token.isVerified as boolean;
-            session.user.isAcceptingMessage = token.isAcceptingMessage  as boolean;
+            session.user.isAcceptingMessages = token.isAcceptingMessages  as boolean;
             session.user.userName = token.userName as string;
           }
             return session
