@@ -1,4 +1,5 @@
 import {z} from 'zod'; 
+import AuthProvider from '../context/AuthProvider';
 //spl for msg: 
 
 const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/);
@@ -12,6 +13,7 @@ const UserZodSchema=z.object({
     isVerified: z.boolean().default(false),
     isAcceptingMessages: z.boolean().default(true),
     messages: z.array(objectId).optional(),
+    authProvider: z.string(),
 });
 type UserZodSchemaType= z.infer<typeof UserZodSchema>;
 export {UserZodSchema};

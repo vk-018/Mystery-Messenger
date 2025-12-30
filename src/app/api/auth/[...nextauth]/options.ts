@@ -5,6 +5,7 @@ import dbConnect from "@/src/lib/dbConnect";
 import User from "@/src/model/user.model";
 import GoogleProvider from "next-auth/providers/google";
 import { UserZodSchema } from "@/src/schemas/user.schema";
+import AuthProvider from "@/src/context/AuthProvider";
 // ...
 // providers: [
 //   GoogleProvider({
@@ -24,13 +25,18 @@ export const authOptions: NextAuthOptions ={
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials: any, req): Promise<any>  {     //write the logic which wither return user or it return null
-
+               //console.log(credentials);
                 //first check db connection
                 await dbConnect();
               try{
                 const user= await User.findOne({
                   $or: [{ userName: credentials.identifier }, { email: credentials?.identifier}]
                 });
+
+               // console.log(user);
+               if(user && user.authProvider==="google"){
+                   return null;   //block credential login for google login user
+               }
                 if(user){
                     let result=await  bcrypt.compare(credentials.password , user.password);
                     if(result){
@@ -42,15 +48,8 @@ export const authOptions: NextAuthOptions ={
                 }
                 else{
                     return null;
-                    // if(!user){
-                    //   //throw new Error('No user Found with these credentials')
-                      
-                    //}
-                    // if(!user.isVerified){
-                    //     return null;
-                    //     //throw new Error('Please Verify your your account');
-                    // }
                 }
+
             }catch(err: any){
                 console.log("Loogin Failed",err);
                 throw new Error(err);           //this si necessary bcoz the fn is expected to gove user or null...so error will may get same treatment as null case 
@@ -88,11 +87,11 @@ export const authOptions: NextAuthOptions ={
                try{
                 //check weather this email already exist
                 let emailUser= await User.findOne({email :user.email});       //find return an array
-                console.log(emailUser);
-                if(emailUser && emailUser.isVerified){
+                //console.log(emailUser);
+                if(emailUser && emailUser.isVerified){   //all google login usera are already verified
                   return true;
                 }
-                if (emailUser && !emailUser.isVerified) {
+                if (emailUser && !emailUser.isVerified) {           //generally next -auth block this
                   //verify him as google login confirm ownership
                     emailUser.isVerified=true;
                     await emailUser.save();
@@ -112,6 +111,7 @@ export const authOptions: NextAuthOptions ={
                     isVerified: true,
                     isAcceptingMessages: true,
                     messages: [],
+                    authProvider: "google"
                 });
                 tempUser.save();
                 }
@@ -121,8 +121,9 @@ export const authOptions: NextAuthOptions ={
              // Google users are trusted
                return true;
              }
-
+            
             if(user && !user.isVerified){
+              
                 return false;       //block sign in
             }
             else{

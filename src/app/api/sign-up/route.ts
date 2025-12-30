@@ -5,9 +5,11 @@ import sendVerificationEmail from "@/src/helper/sendVerificationEmail";
 import { success } from "zod";
 import {UserZodSchema} from "@/src/schemas/user.schema";
 import crypto from "crypto";
+import AuthProvider from "@/src/context/AuthProvider";
 
-export default async function POST(request:Request) {          //defining a post request at /api/sign-up
+export async function POST(request:Request) {          //defining a post request at /api/sign-up
     //first connect data base
+    //console.log("hit");
     await dbConnect();
     try{
         //console.log(request.json());
@@ -53,6 +55,9 @@ export default async function POST(request:Request) {          //defining a post
                     message: emailSend.message,
                 },{status:500});
             }
+            else{
+                console.log(emailSend.message);
+            }
 
 
             const parse=UserZodSchema.safeParse({
@@ -64,6 +69,7 @@ export default async function POST(request:Request) {          //defining a post
                 isVerified: false,
                 isAcceptingMessages: true,
                 messages: [],
+                authProvider: "credentials",
             });
             if(!parse.success){
                 return Response.json({

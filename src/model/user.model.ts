@@ -63,6 +63,10 @@ const UserSchema= new mongoose.Schema<schema1>({      //satisfies wont work for 
         type: mongoose.Types.ObjectId,
         ref:"Message",
     }],
+    authProvider : {
+        type :String,
+        required: true,
+    }
 }) ;
 
 
