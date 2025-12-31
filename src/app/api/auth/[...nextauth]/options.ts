@@ -156,6 +156,11 @@ export const authOptions: NextAuthOptions ={
             session.user.userName = token.userName as string;
           }
             return session
+            /*
+            This does not create a user object.
+            It adds / mutates properties on an existing session.user object.
+            If session.user is undefined, this code will throw an error. 
+            */
          },
     }
     
