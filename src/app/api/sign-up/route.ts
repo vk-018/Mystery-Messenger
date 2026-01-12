@@ -9,7 +9,7 @@ import AuthProvider from "@/src/context/AuthProvider";
 
 export async function POST(request:Request) {          //defining a post request at /api/sign-up
     //first connect data base
-    //console.log("hit");
+    console.log("hit");
     await dbConnect();
     try{
         //console.log(request.json());
@@ -29,6 +29,7 @@ export async function POST(request:Request) {          //defining a post request
         let emailUser= await User.findOne({email :email});       //find return an array
         console.log(emailUser,userNameUser);
         if (emailUser?.isVerified) {
+            // console.log("Email already in use");
             return Response.json({
                 success:false,
                 message: "Email already taken",
@@ -84,7 +85,7 @@ export async function POST(request:Request) {          //defining a post request
             },{status: 201});
     }
     catch(err){
-        console.log("Failed to Register",err);
+        console.log("Failed to Register due to some error",err);
         return Response.json({
             success: false,
             message: "Failed to Register",

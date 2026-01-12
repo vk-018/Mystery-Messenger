@@ -23,11 +23,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <html lang="en">
-      <AuthProvider>     {/*wrap whole posdy with this now seesion info is available at al the clients */}
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
-      </AuthProvider>
+  return (  // {/**html can only have two children */}
+    <html lang="en" className="dark">
+  
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+       <AuthProvider>     {/*wrap whole posdy with this now seesion info is available at al the clients */}
+        {children}
+       </AuthProvider>
+      </body>
     </html>
   );
 }
