@@ -37,8 +37,40 @@ const UserZodSchema=z.object({
 
 
 export default function SignUp() {
+
+  //write debounce fn 
+  function debounce(fn : Function , delay: number=200) : Function{        //this fn basically creates a fn with memory(i.e timerId)
+
+    let timerId: ReturnType<typeof setTimeout> | undefined;
+
+    return function(this:unknown ,...args: any[]){        //clubbing all arguments as an array
+      clearTimeout(timerId);
+
+      timerId= setTimeout(()=>{
+        fn(...args);                 //call that fn
+      },delay);
+    };
+  }
+
+  async function usernameCheck(userName :string){
+    try{
+      const result = await axios.post("/api/check-username-unique",{userName});
+      console.log(result.data);
+      setuserNameAvl(result.data.message);
+    }
+    catch(err){
+      console.log("Error in sending fetching Api", err);
+    }
+  }
+
+  const debounceCheck=debounce(usernameCheck,300);
+
+
+
+  
   const router = useRouter();          //alternative of use Navigate
   let [message,setMessage]= useState("");
+  let [userNameAvl,setuserNameAvl]= useState("");
   // 1. Define your form.
   const form = useForm<z.infer<typeof UserZodSchema>>({
     resolver: zodResolver(UserZodSchema),
@@ -98,11 +130,18 @@ export default function SignUp() {
               <FormLabel>Username</FormLabel>
                {/**Automatically connects:Value ,Change handler ,Blur handler form control expects exactly one child no comments also*/ }
               <FormControl>
-                <Input type="text" placeholder="Enter Your Username" {...field} />        
+                <Input type="text" placeholder="Enter Your Username" {...field}    //this fields contain all the functionalities like onchange,onsubmit
+                 onChange={(e) => {
+                    field.onChange(e);        //update form state
+                    
+                    debounceCheck(e.target.value);
+                  }
+                 }
+                />        
               </FormControl>
               {!fieldState.error && (
                   <FormDescription>
-                   This is your public display name.
+                   {userNameAvl}
                  </FormDescription>
               )
               }
