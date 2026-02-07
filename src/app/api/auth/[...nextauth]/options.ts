@@ -162,6 +162,12 @@ export const authOptions: NextAuthOptions ={
             If session.user is undefined, this code will throw an error. 
             */
          },
+
+         async redirect({ url, baseUrl }) {
+          
+          return `${baseUrl}/dashboard`;                         //baseurl is domail of our app
+         }
+
     }
     
     

@@ -30,7 +30,7 @@ export async function proxy(request: NextRequest) {
 
       // Not logged in & accessing protected routes
     if (!token && url.pathname.startsWith("/dashboard")) {
-      return NextResponse.redirect(new URL("/sign-in", request.url))
+      return NextResponse.redirect(new URL("/home", request.url))
     }
     
 
