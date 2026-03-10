@@ -45,7 +45,7 @@ export async function POST(request:Request) {
         });
     }
     catch(err){
-        console.log("FAiled to get message",err);
+        console.log("FAiled to send message",err);
         return Response.json({
                 success: false,
                 message: "Message sending failed",

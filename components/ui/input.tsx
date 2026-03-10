@@ -10,7 +10,7 @@ function Input({
   return (
     <input
       type={type}
-      readOnly
+      
       data-slot="input"
       className={cn(
         // ORIGINAL shadcn styles (background intact)
